@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { ArrowRight, Check, LockKeyhole, Mail, UserRound } from 'lucide-react'
 import { Footer, Header } from './Home'
+import { API_BASE_URL } from '../config/api.js'
 
 export default function Account() {
   const [darkMode, setDarkMode] = useState(false)
@@ -23,14 +24,12 @@ export default function Account() {
       return
     }
 
-    const configuredBase = import.meta.env.VITE_API_URL
-    const base = (configuredBase || (import.meta.env.DEV ? 'http://localhost:5000' : '')).replace(/\/+$/, '')
-    if (!base) {
+    if (!API_BASE_URL) {
       setMessage('The backend API URL is not configured for this site.')
       return
     }
 
-    const apiBase = base.endsWith('/api') ? base : `${base}/api`
+    const apiBase = `${API_BASE_URL}/api`
     const endpoint = `${apiBase}/auth/${isSignup ? 'signup' : 'login'}`
     const payload = {
       name: formData.get('name') || '',

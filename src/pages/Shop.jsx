@@ -31,6 +31,7 @@ import { footerNavigation, primaryNavigation } from '../data/navigation'
 import { formatPrice } from '../data/catalog'
 import { BUSINESS_WHATSAPP } from '../data/contact'
 import { defaultShopHeroImage } from '../data/brandMedia'
+import { API_BASE_URL } from '../config/api.js'
 
 // ---------------------------------------------
 // CONFIG
@@ -1015,10 +1016,8 @@ export default function Shop() {
     setProductsLoading(true)
     setProductsError('')
     try {
-      const configuredBase = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'http://localhost:5000' : '')
-      if (!configuredBase) throw new Error('The product catalog API is not configured.')
-      const base = configuredBase.replace(/\/+$/, '')
-      const apiBase = base.endsWith('/api') ? base : `${base}/api`
+      if (!API_BASE_URL) throw new Error('The product catalog API is not configured.')
+      const apiBase = `${API_BASE_URL}/api`
       const catalog = []
       let page = 1
       let totalPages = 1
@@ -1047,10 +1046,8 @@ export default function Shop() {
   useEffect(() => { loadProducts() }, [])
 
   useEffect(() => {
-    const configuredBase = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'http://localhost:5000' : '')
-    if (!configuredBase) return undefined
-    const base = configuredBase.replace(/\/+$/, '')
-    const apiBase = base.endsWith('/api') ? base : `${base}/api`
+    if (!API_BASE_URL) return undefined
+    const apiBase = `${API_BASE_URL}/api`
     let active = true
     fetch(`${apiBase}/content/shop`)
       .then(async (response) => {
@@ -1278,10 +1275,8 @@ export default function Shop() {
     setCheckoutLoading(true)
     setCheckoutError('')
     try {
-      const configuredBase = import.meta.env.VITE_API_URL
-      const base = (configuredBase || (import.meta.env.DEV ? 'http://localhost:5000' : '')).replace(/\/+$/, '')
-      if (!base) throw new Error('Checkout is not configured. Set VITE_API_URL to the backend URL.')
-      const apiBase = base.endsWith('/api') ? base : `${base}/api`
+      if (!API_BASE_URL) throw new Error('Checkout is not configured. Set VITE_API_BASE_URL or VITE_API_URL to the backend URL.')
+      const apiBase = `${API_BASE_URL}/api`
       const response = await fetch(`${apiBase}/checkout`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

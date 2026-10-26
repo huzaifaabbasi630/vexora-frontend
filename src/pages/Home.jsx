@@ -23,6 +23,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion'
 import { footerNavigation, primaryNavigation } from '../data/navigation'
 import { homeHeroImages, trendingCategoryDefaults } from '../data/brandMedia'
+import { API_BASE_URL } from '../config/api.js'
 
 // ---------------------------------------------
 // DATA
@@ -645,10 +646,8 @@ export default function Home() {
     setProductsLoading(true)
     setProductsError('')
     try {
-      const configuredBase = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'http://localhost:5000' : '')
-      if (!configuredBase) throw new Error('The product catalog API is not configured.')
-      const base = configuredBase.replace(/\/+$/, '')
-      const apiBase = base.endsWith('/api') ? base : `${base}/api`
+      if (!API_BASE_URL) throw new Error('The product catalog API is not configured.')
+      const apiBase = `${API_BASE_URL}/api`
       const timestamp = Date.now()
       const response = await fetch(`${apiBase}/products?limit=6&_t=${timestamp}`)
       const body = await response.json().catch(() => ({}))
@@ -679,10 +678,8 @@ export default function Home() {
   useEffect(() => { loadFeaturedProducts() }, [])
 
   useEffect(() => {
-    const configuredBase = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'http://localhost:5000' : '')
-    if (!configuredBase) return undefined
-    const base = configuredBase.replace(/\/+$/, '')
-    const apiBase = base.endsWith('/api') ? base : `${base}/api`
+    if (!API_BASE_URL) return undefined
+    const apiBase = `${API_BASE_URL}/api`
     let active = true
     fetch(`${apiBase}/content/home`)
       .then(async (response) => {

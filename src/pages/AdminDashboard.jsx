@@ -5,8 +5,9 @@ import {
   ShoppingCart, Users,
 } from 'lucide-react';
 import { defaultShopHeroImage, homeHeroImages, trendingCategoryDefaults } from '../data/brandMedia';
+import { API_BASE_URL } from '../config/api.js';
 
-const API = (import.meta.env.VITE_API_URL || 'http://localhost:5000').replace(/\/api\/?$/, '').replace(/\/+$/, '');
+const API = API_BASE_URL;
 const sections = [
   { id: 'overview', label: 'Overview', icon: LayoutDashboard },
   { id: 'customers', label: 'Customers', icon: Users },
@@ -57,6 +58,9 @@ export default function AdminDashboard({ owner, overview, onLogout }) {
   const [chartMetric, setChartMetric] = useState('orders');
 
   const request = async (path, options = {}) => {
+    if (!API) {
+      throw new Error('Backend API URL is not configured. Set VITE_API_BASE_URL or VITE_API_URL.');
+    }
     const response = await fetch(`${API}/api${path}`, {
       credentials: 'include',
       ...options,
@@ -499,6 +503,10 @@ export default function AdminDashboard({ owner, overview, onLogout }) {
   };
 
   const exportCustomers = async () => {
+    if (!API) {
+      setError('Backend API URL is not configured. Set VITE_API_BASE_URL or VITE_API_URL.');
+      return;
+    }
     const params = new URLSearchParams();
     if (search.trim()) params.set('search', search.trim());
     if (filter) params.set('status', filter);
