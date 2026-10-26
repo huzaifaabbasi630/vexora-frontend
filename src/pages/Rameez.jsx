@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { ArrowRight, CreditCard, LogOut, Mail, ShieldCheck, ShoppingCart, UserRound, LockKeyhole, CheckCircle2, CircleAlert } from 'lucide-react';
 import AdminDashboard from './AdminDashboard';
+import { API_ORIGIN } from '../config/api';
 
-const configuredApi = (import.meta.env.VITE_API_URL || 'http://localhost:5000').replace(/\/+$/, '');
-const ADMIN_API = configuredApi.endsWith('/api') ? configuredApi.slice(0, -4) : configuredApi;
+const ADMIN_API = API_ORIGIN;
 
 const fieldClass = 'mt-2 w-full rounded-xl border border-[#e4d8d0] bg-[#fffdfb] px-4 py-3 text-sm text-[#1a1512] outline-none transition focus:border-[#6f4e37] focus:ring-2 focus:ring-[#d9c2af]';
 

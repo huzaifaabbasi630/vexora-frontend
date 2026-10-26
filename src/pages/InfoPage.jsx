@@ -25,6 +25,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { contentPages, footerNavigation, primaryNavigation } from '../data/navigation'
 import { BUSINESS_EMAIL, BUSINESS_HOURS, BUSINESS_WHATSAPP } from '../data/contact'
 import storyImage from '../../assets/heroimg/shopheroimg.png'
+import { API_BASE_URL } from '../config/api'
 
 const navLinks = primaryNavigation
 const { quickLinks, customerCare, whyVexora } = footerNavigation
@@ -418,10 +419,8 @@ function ContactContent({ content = {} }) {
     setResult({ type: '', message: '' })
 
     try {
-      const configuredBase = import.meta.env.VITE_API_URL
-      const apiBase = (configuredBase || (import.meta.env.DEV ? 'http://localhost:5000' : '')).replace(/\/+$/, '')
-      if (!apiBase) throw new Error('Contact form is not configured. Please use email or WhatsApp instead.')
-      const response = await fetch(`${apiBase}/api/contact`, {
+      if (!API_BASE_URL) throw new Error('Contact form is not configured. Please use email or WhatsApp instead.')
+      const response = await fetch(`${API_BASE_URL}/contact`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(form),
@@ -561,10 +560,8 @@ export default function InfoPage({ pageKey }) {
     const slug = slugByPath[pageKey]
     if (!slug) return undefined
 
-    const configuredBase = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'http://localhost:5000' : '')
-    const base = configuredBase.replace(/\/+$/, '')
-    if (!base) return undefined
-    const apiBase = base.endsWith('/api') ? base : `${base}/api`
+    const apiBase = API_BASE_URL
+    if (!apiBase) return undefined
     const controller = new AbortController()
     fetch(`${apiBase}/content/${slug}`, { signal: controller.signal })
       .then((response) => response.ok ? response.json() : null)

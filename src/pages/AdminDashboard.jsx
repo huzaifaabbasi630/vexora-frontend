@@ -5,8 +5,9 @@ import {
   ShoppingCart, Users,
 } from 'lucide-react';
 import { defaultShopHeroImage, homeHeroImages, trendingCategoryDefaults } from '../data/brandMedia';
+import { API_ORIGIN } from '../config/api';
 
-const API = (import.meta.env.VITE_API_URL || 'http://localhost:5000').replace(/\/api\/?$/, '').replace(/\/+$/, '');
+const API = API_ORIGIN;
 const sections = [
   { id: 'overview', label: 'Overview', icon: LayoutDashboard },
   { id: 'customers', label: 'Customers', icon: Users },

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { ArrowLeft, Heart, Minus, Plus, ShoppingBag, Star, Send, X } from 'lucide-react'
 import { formatPrice } from '../data/catalog'
+import { API_BASE_URL } from '../config/api'
 
 const FALLBACK_IMAGE = `data:image/svg+xml,${encodeURIComponent(
   '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1000"><rect width="800" height="1000" fill="#e8dfd5"/><text x="50%" y="48%" text-anchor="middle" fill="#6f4e37" font-family="Georgia,serif" font-size="54" letter-spacing="8">VEXORA</text><text x="50%" y="55%" text-anchor="middle" fill="#6f4e37" font-family="Arial,sans-serif" font-size="22" letter-spacing="3">IMAGE UNAVAILABLE</text></svg>'
@@ -57,10 +58,8 @@ export default function ProductDetail() {
       setLoading(true)
       setLoadError('')
       try {
-        const configuredBase = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'http://localhost:5000' : '')
-        if (!configuredBase) throw new Error('The product catalog API is not configured.')
-        const base = configuredBase.replace(/\/+$/, '')
-        const apiBase = base.endsWith('/api') ? base : `${base}/api`
+        const apiBase = API_BASE_URL
+        if (!apiBase) throw new Error('The product catalog API is not configured.')
         const response = await fetch(`${apiBase}/products/${encodeURIComponent(productId)}`)
         const body = await response.json().catch(() => ({}))
         if (!response.ok) throw new Error(body.message || 'This product could not be loaded.')
@@ -185,9 +184,7 @@ export default function ProductDetail() {
       return
     }
     try {
-      const configuredBase = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'http://localhost:5000' : '')
-      const base = configuredBase.replace(/\/+$/, '')
-      const apiBase = base.endsWith('/api') ? base : `${base}/api`
+      const apiBase = API_BASE_URL
       
       const response = await fetch(`${apiBase}/reviews`, {
         method: 'POST',
