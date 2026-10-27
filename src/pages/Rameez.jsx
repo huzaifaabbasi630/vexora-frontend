@@ -25,14 +25,27 @@ export default function Rameez() {
     if (!API_BASE_URL) {
       throw new Error('Backend API URL is not configured. Set VITE_API_URL.');
     }
-    const response = await fetch(url, {
-      credentials: 'include',
-      ...options,
-      headers: {
-        'Content-Type': 'application/json',
-        ...(options.headers || {}),
-      },
-    });
+    const controller = new AbortController();
+    const timeoutId = window.setTimeout(() => controller.abort(), 30000);
+    let response;
+    try {
+      response = await fetch(url, {
+        credentials: 'include',
+        ...options,
+        signal: controller.signal,
+        headers: {
+          'Content-Type': 'application/json',
+          ...(options.headers || {}),
+        },
+      });
+    } catch (err) {
+      if (err.name === 'AbortError') {
+        throw new Error('The backend took too long to respond. Please try again; if this continues, check the Render logs.');
+      }
+      throw err;
+    } finally {
+      window.clearTimeout(timeoutId);
+    }
 
     const data = await response.json().catch(() => ({}));
     if (!response.ok) {
