@@ -867,7 +867,7 @@ function QuickViewDialog({ product, onClose, isWishlisted, onToggleWishlist, onA
             )}
           </div>
           <div className="flex min-h-0 flex-col overflow-y-auto p-5 pb-8 text-[#1a1512] dark:text-white sm:p-7">
-            <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#6f4e37] dark:text-[#c9b6a3]">{product.category}</span>
+            <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#6f4e37] dark:text-[#c9b6a3]">{(product.categories?.length ? product.categories : [product.category]).join(' · ')}</span>
             <h2 id="quick-view-title" className="mt-2 font-display text-2xl font-semibold leading-tight sm:text-3xl">{product.name}</h2>
             {Number.isFinite(product.rating) && (
               <div className="mt-3 flex items-center gap-1.5 text-xs text-amber-700 dark:text-amber-400">
@@ -986,7 +986,10 @@ export default function Shop() {
   const [productsLoading, setProductsLoading] = useState(true)
   const [productsError, setProductsError] = useState('')
   const [shopHeroImage, setShopHeroImage] = useState(defaultShopHeroImage)
-  const CATEGORIES = useMemo(() => ['All', ...new Set(products.map((product) => product.category).filter(Boolean))], [products])
+  const CATEGORIES = useMemo(
+    () => ['All', ...new Set(products.flatMap((product) => product.categories?.length ? product.categories : [product.category]).filter(Boolean))],
+    [products]
+  )
   const [darkMode, setDarkMode] = useState(() => loadFromStorage('vexora-dark', false))
   const [category, setCategory] = useState(getInitialCategory)
   const [sort, setSort] = useState('Featured')
@@ -1081,11 +1084,11 @@ export default function Shop() {
     [products]
   )
   const availableSizes = useMemo(
-    () => new Set(products.filter((product) => category === 'All' || product.category === category).flatMap((product) => product.sizeOptions)),
+    () => new Set(products.filter((product) => category === 'All' || (product.categories?.length ? product.categories : [product.category]).includes(category)).flatMap((product) => product.sizeOptions)),
     [category, products]
   )
   const availableColors = useMemo(
-    () => new Set(products.filter((product) => category === 'All' || product.category === category).flatMap((product) => product.colorOptions)),
+    () => new Set(products.filter((product) => category === 'All' || (product.categories?.length ? product.categories : [product.category]).includes(category)).flatMap((product) => product.colorOptions)),
     [category, products]
   )
 
@@ -1093,7 +1096,7 @@ export default function Shop() {
   const categoryCounts = useMemo(() => {
     const counts = { All: products.length }
     CATEGORIES.slice(1).forEach((c) => {
-      counts[c] = products.filter((p) => p.category === c).length
+      counts[c] = products.filter((p) => (p.categories?.length ? p.categories : [p.category]).includes(c)).length
     })
     return counts
   }, [CATEGORIES, products])
@@ -1181,7 +1184,8 @@ export default function Shop() {
   const visibleProducts = useMemo(() => {
     const q = search.trim().toLowerCase()
     const result = products.filter((p) => {
-      const matchCat = category === 'All' || p.category === category
+      const productCategories = p.categories?.length ? p.categories : [p.category]
+      const matchCat = category === 'All' || productCategories.includes(category)
       const matchPrice = p.price >= minPrice && p.price <= priceRange
       const matchSale = !saleOnly || p.oldPrice > p.price
       const matchSize = selectedSize === 'All' || p.sizeOptions.includes(selectedSize)
@@ -1189,7 +1193,7 @@ export default function Shop() {
       const matchSearch =
         !q ||
         p.name.toLowerCase().includes(q) ||
-        p.category.toLowerCase().includes(q) ||
+        productCategories.some((item) => item.toLowerCase().includes(q)) ||
         p.description.toLowerCase().includes(q)
       return matchCat && matchPrice && matchSale && matchSize && matchColor && matchSearch
     })
@@ -1632,7 +1636,7 @@ export default function Shop() {
                         {Number.isFinite(product.rating) && <span className="text-amber-700 dark:text-amber-400 flex items-center gap-0.5 flex-shrink-0"><Star size={11} fill="currentColor" /> {product.rating}</span>}
                       </div>
                       <p className="text-[11px] text-coffee-700 dark:text-gray-300 mt-0.5">
-                        {product.category}{product.colorOptions.length ? ` · ${product.colorOptions.length} color${product.colorOptions.length === 1 ? '' : 's'}` : ''}{product.sizeOptions.length ? ` · ${product.sizeOptions.join(', ')}` : ''}
+                        {(product.categories?.length ? product.categories : [product.category]).join(', ')}{product.colorOptions.length ? ` · ${product.colorOptions.length} color${product.colorOptions.length === 1 ? '' : 's'}` : ''}{product.sizeOptions.length ? ` · ${product.sizeOptions.join(', ')}` : ''}
                       </p>
                       {Number.isFinite(product.reviews) && <p className="mt-1 text-[10px] text-coffee-600 dark:text-gray-400">{product.reviews} reviews</p>}
 

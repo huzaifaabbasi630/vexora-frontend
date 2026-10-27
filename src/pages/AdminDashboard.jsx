@@ -364,6 +364,8 @@ export default function AdminDashboard({ owner, overview, onLogout }) {
     shortDescription: '',
     sku: '',
     category: '',
+    categories: [],
+    newCategory: '',
     regularPrice: '',
     salePrice: '',
     imageLines: '',
@@ -403,6 +405,8 @@ export default function AdminDashboard({ owner, overview, onLogout }) {
         shortDescription: product.shortDescription || '',
         sku: product.sku || '',
         category: product.category || '',
+        categories: [...new Set([...(product.categories || []), product.category].filter(Boolean))],
+        newCategory: '',
         regularPrice: product.regularPrice ?? '',
         salePrice: product.salePrice ?? '',
         imageLines: (product.images || []).map((image) => image.url).join('\n'),
@@ -435,6 +439,9 @@ export default function AdminDashboard({ owner, overview, onLogout }) {
     setError('');
     setNotice('');
     try {
+      if (!productForm.categories.length) {
+        throw new Error('Select at least one product category.');
+      }
       let variants;
       try { variants = JSON.parse(productForm.variantsText || '[]'); } catch { throw new Error('Variant stock must be valid JSON.'); }
       const payload = {
@@ -443,7 +450,8 @@ export default function AdminDashboard({ owner, overview, onLogout }) {
         description: productForm.description,
         shortDescription: productForm.shortDescription,
         sku: productForm.sku,
-        category: productForm.category,
+        category: productForm.categories[0] || '',
+        categories: productForm.categories,
         regularPrice: productForm.regularPrice,
         salePrice: productForm.salePrice,
         images: productForm.imageLines.split(/\r?\n/).map((url) => url.trim()).filter(Boolean).map((url, index) => ({ url, alt: `${productForm.name} image ${index + 1}` })),
@@ -545,7 +553,63 @@ export default function AdminDashboard({ owner, overview, onLogout }) {
             {field('Product name *', 'name', { required: true, maxLength: 160 })}
             {field('Slug', 'slug', { maxLength: 180 })}
             {field('SKU', 'sku', { maxLength: 80 })}
-            {field('Category * (type any category name)', 'category', { required: true, maxLength: 100 })}
+            <fieldset className="rounded-lg border border-[#d8cfc5] p-3 sm:col-span-2">
+              <legend className="px-1 text-sm font-semibold">Categories * (select all that apply)</legend>
+              <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                {[...new Set([...(data?.categories || []), ...(productForm.categories || [])])]
+                  .sort((a, b) => a.localeCompare(b))
+                  .map((category) => (
+                    <label key={category} className="flex items-center gap-2 rounded-md bg-[#faf6f2] px-3 py-2 text-sm">
+                      <input
+                        type="checkbox"
+                        checked={productForm.categories.includes(category)}
+                        onChange={(event) => {
+                          const categories = event.target.checked
+                            ? [...productForm.categories, category]
+                            : productForm.categories.filter((item) => item !== category);
+                          setProductValue('categories', categories);
+                        }}
+                      />
+                      {category}
+                    </label>
+                  ))}
+              </div>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <input
+                  className={`${controlClass} min-w-0 flex-1`}
+                  value={productForm.newCategory}
+                  onChange={(event) => setProductValue('newCategory', event.target.value)}
+                  maxLength={100}
+                  placeholder="Create a custom category"
+                  aria-label="New custom category"
+                />
+                <button
+                  className={buttonClass}
+                  type="button"
+                  onClick={() => {
+                    const category = productForm.newCategory.trim();
+                    if (!category) return;
+                    if (category.length > 100) {
+                      setError('Category names must be 100 characters or fewer.');
+                      return;
+                    }
+                    const existing = [...new Set([...(data?.categories || []), ...(productForm.categories || [])])]
+                      .find((item) => item.toLowerCase() === category.toLowerCase());
+                    const categoryToAdd = existing || category;
+                    setProductForm((current) => ({
+                      ...current,
+                      categories: current.categories.includes(categoryToAdd)
+                        ? current.categories
+                        : [...current.categories, categoryToAdd],
+                      newCategory: '',
+                    }));
+                  }}
+                >
+                  <Plus size={15} /> Add category
+                </button>
+              </div>
+              <p className="mt-2 text-xs text-[#695a50]">A product can appear in multiple shop filters. New categories are saved when you save the product.</p>
+            </fieldset>
             {field('Regular price *', 'regularPrice', { required: true, type: 'number', min: '0', step: '0.01' })}
             {field('Sale price (optional)', 'salePrice', { type: 'number', min: '0', step: '0.01' })}
             {field('Short description', 'shortDescription', { maxLength: 500 })}
@@ -611,7 +675,7 @@ export default function AdminDashboard({ owner, overview, onLogout }) {
             <thead className="border-b border-[#e9dfd7] text-xs uppercase tracking-wide text-[#6f4e37]"><tr><th className="p-3">Product</th><th className="p-3">SKU / Category</th><th className="p-3">Price</th><th className="p-3">Stock</th><th className="p-3">Status</th><th className="p-3">Actions</th></tr></thead>
             <tbody>{(data?.rows || []).map((product) => <tr key={product._id} className="border-b border-[#f0e8e2] align-top">
               <td className="p-3"><div className="flex items-center gap-3"><div className="h-14 w-12 overflow-hidden rounded bg-[#eee5de]">{product.images?.[0]?.url && <img src={product.images[0].url} alt={product.images[0].alt || product.name} className="h-full w-full object-cover" />}</div><div><div className="font-semibold">{product.name}</div><div className="text-xs text-[#695a50]">/{product.slug}</div></div></div></td>
-              <td className="p-3">{product.sku || '—'}<div className="text-xs text-[#695a50]">{product.category}</div></td>
+              <td className="p-3">{product.sku || '—'}<div className="text-xs text-[#695a50]">{(product.categories?.length ? product.categories : [product.category]).filter(Boolean).join(', ')}</div></td>
               <td className="p-3">{product.salePrice != null && <div className="text-xs text-[#78695e] line-through">PKR {Number(product.regularPrice).toLocaleString()}</div>}PKR {Number(product.salePrice ?? product.regularPrice).toLocaleString()}</td>
               <td className="p-3">{product.trackInventory ? product.variants?.length ? product.variants.reduce((sum, variant) => sum + variant.stock, 0) : product.stock : 'Not tracked'}</td>
               <td className="p-3"><span className="capitalize">{product.status}</span>{product.featured && <div className="text-xs text-[#6f4e37]">Featured</div>}</td>

@@ -126,6 +126,8 @@ export default function ProductDetail() {
     )
   }
 
+  const productCategories = product.categories?.length ? product.categories : [product.category];
+
   const toggleWishlist = () => {
     const current = readStorage('vexora-wishlist', [])
     const next = current.includes(product.id) ? current.filter((id) => id !== product.id) : [...current, product.id]
@@ -241,9 +243,9 @@ export default function ProductDetail() {
 
         <section className="flex flex-col py-2">
           <nav aria-label="Breadcrumb" className="text-[10px] font-medium uppercase tracking-[0.18em] text-[#6f4e37]">
-            <a href="/">Home</a><span className="mx-2">/</span><a href="/shop">Shop</a><span className="mx-2">/</span><span aria-current="page">{product.category}</span>
+            <a href="/">Home</a><span className="mx-2">/</span><a href="/shop">Shop</a><span className="mx-2">/</span><span aria-current="page">{productCategories.join(', ')}</span>
           </nav>
-          <p className="mt-7 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#6f4e37]">{product.category}</p>
+          <p className="mt-7 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#6f4e37]">{productCategories.join(' · ')}</p>
           <h1 className="mt-2 font-display text-3xl font-semibold leading-tight sm:text-4xl">{product.name}</h1>
           <p className="mt-3 flex items-center gap-1.5 text-sm text-amber-700">
             <Star size={14} fill="currentColor" /> {Number.isFinite(product.rating) ? product.rating : 'No ratings yet'}

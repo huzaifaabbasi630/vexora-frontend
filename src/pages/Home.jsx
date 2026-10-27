@@ -954,8 +954,9 @@ export default function Home() {
           ) : (
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
               {trendingCategoryDefaults.map((category) => {
-                const categoryProduct = featuredProducts.find(p => p.category === category.name && p.categoryFeatured) || 
-                                        featuredProducts.find(p => p.category === category.name)
+                const matchesCategory = (product) => (product.categories?.length ? product.categories : [product.category]).includes(category.name)
+                const categoryProduct = featuredProducts.find(p => matchesCategory(p) && p.categoryFeatured) ||
+                                        featuredProducts.find(matchesCategory)
                 const state = categoryProduct ? (productStates[categoryProduct.id] || { imageIdx: 0, colorIdx: 0 }) : { imageIdx: 0, colorIdx: 0 }
                 const isWishlisted = categoryProduct ? wishlist.includes(categoryProduct.id) : false
                 
