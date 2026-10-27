@@ -649,7 +649,7 @@ export default function Home() {
       if (!API_BASE_URL) throw new Error('The product catalog API is not configured.')
       const apiBase = `${API_BASE_URL}/api`
       const timestamp = Date.now()
-      const response = await fetch(`${apiBase}/products?limit=6&_t=${timestamp}`)
+      const response = await fetch(`${apiBase}/products/popular?limit=100&_t=${timestamp}`)
       const body = await response.json().catch(() => ({}))
       if (!response.ok) throw new Error(body.message || 'Featured products could not be loaded.')
       const rows = (body.rows || []).map((product) => ({
@@ -800,6 +800,11 @@ export default function Home() {
       name: product.name || 'Product',
       price: product.price || 0,
       priceFormatted: product.priceFormatted || 'PKR 0',
+    }
+    if (API_BASE_URL) {
+      fetch(`${API_BASE_URL}/api/products/views/${encodeURIComponent(normalizedProduct.slug || normalizedProduct.id)}`, {
+        method: 'POST',
+      }).catch((error) => console.error('Product view could not be recorded:', error.message))
     }
     setQuickViewProduct(normalizedProduct)
     setRecentlyViewed((prev) => {
