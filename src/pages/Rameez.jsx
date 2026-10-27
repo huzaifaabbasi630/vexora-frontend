@@ -23,7 +23,7 @@ export default function Rameez() {
 
   const fetchJson = async (url, options = {}) => {
     if (!API_BASE_URL) {
-      throw new Error('Backend API URL is not configured. Set VITE_API_BASE_URL or VITE_API_URL.');
+      throw new Error('Backend API URL is not configured. Set VITE_API_URL.');
     }
     const response = await fetch(url, {
       credentials: 'include',

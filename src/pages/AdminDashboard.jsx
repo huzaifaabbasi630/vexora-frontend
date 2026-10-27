@@ -59,7 +59,7 @@ export default function AdminDashboard({ owner, overview, onLogout }) {
 
   const request = async (path, options = {}) => {
     if (!API) {
-      throw new Error('Backend API URL is not configured. Set VITE_API_BASE_URL or VITE_API_URL.');
+      throw new Error('Backend API URL is not configured. Set VITE_API_URL.');
     }
     const response = await fetch(`${API}/api${path}`, {
       credentials: 'include',
@@ -504,7 +504,7 @@ export default function AdminDashboard({ owner, overview, onLogout }) {
 
   const exportCustomers = async () => {
     if (!API) {
-      setError('Backend API URL is not configured. Set VITE_API_BASE_URL or VITE_API_URL.');
+      setError('Backend API URL is not configured. Set VITE_API_URL.');
       return;
     }
     const params = new URLSearchParams();

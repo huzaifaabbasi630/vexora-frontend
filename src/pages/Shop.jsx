@@ -1275,7 +1275,7 @@ export default function Shop() {
     setCheckoutLoading(true)
     setCheckoutError('')
     try {
-      if (!API_BASE_URL) throw new Error('Checkout is not configured. Set VITE_API_BASE_URL or VITE_API_URL to the backend URL.')
+      if (!API_BASE_URL) throw new Error('Checkout is not configured. Set VITE_API_URL to the backend URL.')
       const apiBase = `${API_BASE_URL}/api`
       const response = await fetch(`${apiBase}/checkout`, {
         method: 'POST',
