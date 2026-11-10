@@ -142,6 +142,19 @@ export default function AdminDashboard({ owner, overview, onLogout }) {
     };
   }, [section, overviewRange, appliedCustomRange]);
 
+  useEffect(() => {
+    if (section !== 'orders') return undefined;
+    const refresh = () => {
+      if (document.visibilityState === 'visible') loadSection();
+    };
+    const timer = window.setInterval(refresh, 15_000);
+    document.addEventListener('visibilitychange', refresh);
+    return () => {
+      window.clearInterval(timer);
+      document.removeEventListener('visibilitychange', refresh);
+    };
+  }, [section, page, search, filter]);
+
   const title = sections.find((item) => item.id === section)?.label || 'Overview';
   const liveOverview = section === 'overview' && data?.summary ? data : null;
   const summary = liveOverview?.summary || {};
@@ -730,18 +743,34 @@ export default function AdminDashboard({ owner, overview, onLogout }) {
     if (section === 'orders') return <div className="overflow-x-auto"><table className="w-full min-w-[900px] text-left text-sm">
       <thead className="border-b border-[#e9dfd7] text-xs uppercase tracking-wide text-[#6f4e37]"><tr><th className="p-3">Order</th><th className="p-3">Customer / items</th><th className="p-3">Placed</th><th className="p-3">Total</th><th className="p-3">Status</th><th className="p-3">Advance</th><th className="p-3">Actions</th></tr></thead>
       <tbody>{(data?.rows || []).map((order) => {
-        const next = { Confirmed: 'Dispatched', Dispatched: 'On The Way', 'On The Way': 'Delivered' }[order.status];
+        const canNotifyCustomer = ['Pending Confirmation', 'Confirmed', 'Dispatched', 'On The Way', 'Delivered'].includes(order.status);
+        const quickStatuses = ['Dispatched', 'On The Way'];
+        const next = { 'On The Way': 'Delivered' }[order.status];
         return <tr key={order._id} className="border-b border-[#f0e8e2] align-top">
           <td className="p-3">#{String(order._id).slice(-8)}</td>
           <td className="p-3"><div className="font-semibold">{order.customerInfo?.name}</div><div className="text-xs">{order.customerInfo?.email}</div><div className="mt-2 text-xs">{(order.cartItems || []).map((item) => `${item.name}${item.selectedSize ? ` (${item.selectedSize})` : ''} ×${item.qty}`).join(', ')}</div></td>
           <td className="p-3">{order.createdAt ? new Date(order.createdAt).toLocaleDateString() : '—'}</td>
           <td className="p-3">PKR {Number(order.total || 0).toLocaleString()}</td><td className="p-3">{order.status}</td>
-          <td className="p-3">{next ? <button className={buttonClass} onClick={() => runAction(() => request(`/admin/orders/${order._id}/status`, { method: 'PATCH', body: JSON.stringify({ status: next }) }), `Order advanced to ${next}.`)}>{next}</button> : '—'}</td>
-          <td className="p-3"><button className={deleteButtonClass} onClick={async () => {
+          <td className="p-3"><div className="flex flex-wrap gap-2">
+            {canNotifyCustomer && <button className={buttonClass} onClick={() => runAction(
+              () => request(`/admin/orders/${order._id}/confirmation-email`, { method: 'POST' }),
+              'Full order confirmation email sent to customer.'
+            )}>Your order is confirmed</button>}
+            {quickStatuses.map((status) => <button key={status} className={buttonClass} onClick={() => runAction(
+              () => request(`/admin/orders/${order._id}/status`, { method: 'PATCH', body: JSON.stringify({ status }) }),
+              `Order advanced to ${status}.`
+            )}>{status}</button>)}
+          </div></td>
+          <td className="p-3"><div className="flex flex-wrap gap-2">
+            {next && <button className={buttonClass} onClick={() => runAction(
+              () => request(`/admin/orders/${order._id}/status`, { method: 'PATCH', body: JSON.stringify({ status: next }) }),
+              `Order advanced to ${next}.`
+            )}>{next}</button>}
+            <button className={deleteButtonClass} onClick={async () => {
             if (!window.confirm(`Permanently delete order #${String(order._id).slice(-8)} and all data in this order record? This cannot be undone.`)) return;
             if (window.prompt('Type DELETE to permanently remove this order:') !== 'DELETE') return;
             await runAction(() => request(`/admin/orders/${order._id}`, { method: 'DELETE', body: JSON.stringify({ confirmation: 'DELETE' }) }), 'Order permanently deleted.');
-          }}>Delete permanently</button></td>
+          }}>Delete permanently</button></div></td>
         </tr>;
       })}</tbody></table></div>;
 

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 
 export default function OrderSuccess() {
   const [orderId, setOrderId] = useState('')
-  const businessNumber = '923068939934'
+  const businessNumber = '923147940260' // Replace with your business WhatsApp number (in international format without '+' or '00')
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
@@ -47,9 +47,14 @@ export default function OrderSuccess() {
 
         {/* Content */}
         <div className="p-8 text-center">
-          <p className="text-[#6D6259] mb-6">
-            Your order has been placed successfully. Please confirm your order via WhatsApp to complete the process.
-          </p>
+         <p className="text-[#6D6259] mb-6">
+  Your order has been placed successfully. Please confirm your order via WhatsApp to complete the process.
+  <br /><br />
+  <span className="block text-sm text-[#6F4E37] font-bold tracking-wider mb-1">⚠️ NOTE / IMPORTANT:</span>
+  <span className="font-bold text-[#1A1512]">
+    Agar aap WhatsApp par comfortable nahi hain, to please hamari confirmation email ka intezar karein. Hum jald hi aapko email confirmation bhej denge. Thank you for choosing Vexora!
+  </span>
+</p>
 
           {/* Order ID Display */}
           <div className="inline-block bg-[#F3EFE9] border border-[#E5DED5] px-4 py-3 mb-8">
